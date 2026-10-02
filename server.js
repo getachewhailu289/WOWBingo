@@ -22,6 +22,8 @@ const app = express();
 
 app.use(express.json());
 app.use(cors());
+
+// እዚህ ጋር ነው app.use(express.static('public')); የሚጨመረው (ስታቲክ ፋይሎችን ለማንበብ)[cite: 10]
 app.use(express.static('public'));
 
 const USERS_FILE = path.join(__dirname, 'users.json');
@@ -998,7 +1000,6 @@ bot.command('addbalance', async (ctx) => {
         return ctx.reply('⚠️ እባክዎ ትክክለኛ የብር መጠን ያስገቡ!');
     }
 
-    // 2. የተጠየቀው ማስተካከያ፡ ተጠቃሚው ኮንታክት ሼር ያደረገ ወይም የጨወታ ታሪክ/ደንበኛ መሆኑን ማረጋገጥ
     if (!isUserRegistered(targetUserId)) {
         return ctx.reply(`❌ <b>ደንበኛ አይደለም!</b>\n\nየተሰጠው ቴሌግራም አይዲ (<code>${targetUserId}</code>) ከዚህ በፊት ቦቱን ተጠቅሞ ኮንታክት ሼር ያደረገ ወይም የተመዘገበ ደንበኛ አይደለም።`, { parse_mode: 'HTML' });
     }
@@ -1054,7 +1055,6 @@ bot.start((ctx) => {
         }
     }
 
-    // 1. የተጠየቀው ማስተካከያ፡ ተጠቃሚው መጀመሪያ ሲጀምር ኮንታክት ሼር ካደረገ በ contacts.json መመዝገቡን ማረጋገጥ
     if (!isUserRegistered(userId)) {
         return ctx.reply(
             '🎉 እንኳን ወደ **WOW BINGO** በደህና መጡ!\n\nወደ ጨዋታው ለመግባት እባክዎ ከታች ያለውን **"ስልክ ቁጥር አጋራ"** የሚለውን ቁልፍ በመጫን ስልክዎትን ያጋሩ።',
@@ -1101,7 +1101,6 @@ bot.on('contact', async (ctx) => {
     let targetUser = Array.isArray(users) ? users.find(u => String(u.telegram_id) === userId) : users[userId];
     let currentBalance = targetUser ? (targetUser.balance || 10.00) : 10.00;
 
-    // እዚህ ላይ ኮንታክቱ በ contacts.json ፋይል ውስጥ በትክክል ይመዘገባል
     contacts[phone] = {
         telegram_id: userId,
         telegram_name: firstName,
@@ -1154,7 +1153,7 @@ bot.command('balance', (ctx) => {
             parse_mode: 'HTML',
             ...Markup.inlineKeyboard([
                 [Markup.button.webApp('🎮 ባለ 10 ጨዋታውን ክፈት', webAppUrl10)],
-				            ])
+            ])
         }
     );
 });
