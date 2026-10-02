@@ -2219,21 +2219,17 @@
                 if ((index + 1) % 5 === 0) { grid.push(row); row = []; }
             });
 
-           let winningConditionsFound = [];
+            let winningConditionsFound = [];
             for (let r = 0; r < 5; r++) { if (grid[r].every(c => c.marked)) winningConditionsFound.push({type: 'row', index: r}); }
             for (let c = 0; c < 5; c++) { if (grid.every(r => r[c].marked)) winningConditionsFound.push({type: 'col', index: c}); }
             if ([0,1,2,3,4].every(i => grid[i][i].marked)) winningConditionsFound.push({type: 'diag1'});
             if ([0,1,2,3,4].every(i => grid[i][4 - i].marked)) winningConditionsFound.push({type: 'diag2'});
             if (grid[0][0].marked && grid[0][4].marked && grid[4][0].marked && grid[4][4].marked) {
-    winningConditionsFound.push({type: 'corners'});
-}
+                winningConditionsFound.push({type: 'corners'});
+            }
 
-            // ለባለ 50 ብር ሩም ቢያንስ 2 መስመር (ወደ ጎን፣ ወደ ታች ወይም ዲያጎናል) መኖሩን ማረጋገጫ
-            let lineConditions = winningConditionsFound.filter(w => ['row', 'col', 'diag1', 'diag2'].includes(w.type));
-            let requiredLines = (roomType === 50) ? 2 : 1;
-
-            if (lineConditions.length < requiredLines) {
-                showNotification(roomType === 50 ? `⚠️ ባለ 50 ብር ሩም ለማሸነፍ ቢያንስ 2 መስመር (ወደ ጎን፣ ወደ ታች ወይም ዲያጎናል) ያስፈልጋል!` : `⚠️ መስመር አልሰራም!`);
+            if (winningConditionsFound.length === 0) {
+                showNotification(`⚠️ መስመር አልሰራም!`);
                 return;
             }
 
