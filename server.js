@@ -23,7 +23,6 @@ const express = require('express');
 const cors = require('cors'); // 1. cors ማምጣት (import ማድረግ)
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 // 2. ሌሎች ሚድልዌር ወይም ራውተሮች ከመደረጋቸው በፊት እዚህ ላይ ማስገባት
 app.use(cors()); 
@@ -35,6 +34,7 @@ app.get('/api/test', (req, res) => {
     res.json({ message: 'CORS በተሳካ ሁኔታ ሰርቷል!' });
 });
 
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`ሰርቨሩ በፖርት ${PORT} እየሰራ ነው`);
 });
