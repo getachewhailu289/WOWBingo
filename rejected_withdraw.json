@@ -1,0 +1,94 @@
+{
+  "W_1790035079717": {
+    "userId": 456801294,
+    "userName": "Take it like",
+    "method": "Telebirr",
+    "name": "ጌታቸው",
+    "phone": "0910970993",
+    "amount": 200,
+    "rejectedAt": "9/22/2026, 12:04:48 PM"
+  },
+  "W_1790014392738": {
+    "userId": 2119423483,
+    "userName": "Getachew",
+    "method": "Telebirr",
+    "name": "getachew",
+    "phone": "0985141415",
+    "amount": 200,
+    "rejectedAt": "9/22/2026, 12:04:51 PM"
+  },
+  "W_1790015835787": {
+    "userId": 2119423483,
+    "userName": "Getachew",
+    "method": "Telebirr",
+    "name": "getachew",
+    "phone": "0985141415",
+    "amount": 15,
+    "rejectedAt": "9/22/2026, 12:04:54 PM"
+  },
+  "W_1790025735751": {
+    "userId": 2119423483,
+    "userName": "Getachew",
+    "method": "Telebirr",
+    "name": "getachew",
+    "phone": "0985141415",
+    "amount": 25,
+    "rejectedAt": "9/22/2026, 12:04:56 PM"
+  },
+  "W_1790029038010": {
+    "userId": 2119423483,
+    "userName": "Getachew",
+    "method": "CBE",
+    "name": "getachew",
+    "phone": "0910970993",
+    "amount": 10,
+    "rejectedAt": "9/22/2026, 12:04:59 PM"
+  },
+  "W_1790032485099": {
+    "userId": "0910970993",
+    "userName": "Take it like",
+    "method": "Telebirr",
+    "name": "Getachew",
+    "phone": "0910970993",
+    "amount": 100,
+    "rejectedAt": "9/22/2026, 12:05:00 PM"
+  },
+  "W_1790034910533": {
+    "userId": 2119423483,
+    "userName": "Getachew",
+    "method": "Telebirr",
+    "name": "Gech",
+    "phone": "0910970993",
+    "amount": 20,
+    "rejectedAt": "9/22/2026, 12:05:02 PM"
+  },
+  "W_1790100814925": {
+    "userId": 2119423483,
+    "userName": "Getachew",
+    "method": "Telebirr",
+    "name": "getachew",
+    "phone": "0985141415",
+    "amount": 5,
+    "rejectedAt": "9/22/2026, 12:05:03 PM"
+  },
+  "W_1790103954402": {
+    "userId": 1073856026,
+    "userName": "Esubalew️",
+    "method": "Telebirr",
+    "name": "Esubalew",
+    "phone": "0915289808",
+    "amount": 50,
+    "date": "9/22/2026, 12:05:54 PM",
+    "rejectedAt": "9/22/2026, 12:06:29 PM"
+  },
+  "W_1790105759535": {
+    "userId": 442642610,
+    "userName": "Semaye",
+    "method": "Telebirr",
+    "name": "Jemal Abdulkadir",
+    "phone": "0997312870",
+    "amount": 500,
+    "date": "9/22/2026, 12:35:59 PM",
+    "rejectedAt": "9/22/2026, 12:36:54 PM"
+  }
+}

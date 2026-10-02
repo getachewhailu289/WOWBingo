@@ -1,0 +1,9 @@
+{
+  "soldCount": 0,
+  "takenCards": [],
+  "userSelections": {},
+  "winner": null,
+  "disabledCards": [],
+  "roundWinners": [],
+  "bingoTriggerTime": null
+}
