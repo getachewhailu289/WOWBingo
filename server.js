@@ -38,10 +38,11 @@ app.get('/api/test', (req, res) => {
 app.listen(PORT, () => {
     console.log(`ሰርቨሩ በፖርት ${PORT} እየሰራ ነው`);
 });
+
 app.use(express.json());
 app.use(cors());
 
-// እዚህ ጋር ነው app.use(express.static('public')); የሚጨመረው (ስታቲክ ፋይሎችን ለማንበብ)[cite: 10]
+// እዚህ ጋር ነው app.use(express.static('public')); የሚጨመረው (ስታቲክ ፋይሎችን ለማንበብ)
 app.use(express.static('public'));
 
 const USERS_FILE = path.join(__dirname, 'users.json');
@@ -507,8 +508,9 @@ app.get('/api/game-status', (req, res) => {
     });
 });
 
-app.get('/api/balance', (req, res) => {
-    const telegramId = req.query.telegram_id || req.query.user_id || req.query.id;
+// የ ሚኒ አፕ (Frontend) ባላንስ ጥያቄዎችን እንዲያስተናግድ የተጨመረው API (ሁለቱንም /api/balance እና /api/balance/:userId አብረው እንዲኖሩ ተደረገ)
+app.get(['/api/balance', '/api/balance/:userId'], (req, res) => {
+    const telegramId = req.query.telegram_id || req.query.user_id || req.query.id || req.params.userId;
     if (!telegramId) return res.status(400).json({ success: false, error: 'Telegram ID required' });
     
     const users = loadUsers();
@@ -1008,7 +1010,7 @@ bot.command('addbalance', async (ctx) => {
 
     const textParts = ctx.message.text.split(' ');
     if (textParts.length < 3) {
-        return ctx.reply('⚠️ አጠቃቀም ስህተት ነው!\nትክክለኛ አጠቃቀም: <code>/addbalance telegram_id የብር_መጠን</code>', { parse_mode: 'HTML' });
+        return ctx.reply('⚠️️ አጠቃቀም ስህተት ነው!\nትክክለኛ አጠቃቀም: <code>/addbalance telegram_id የብር_መጠን</code>', { parse_mode: 'HTML' });
     }
 
     const targetUserId = textParts[1];
