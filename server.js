@@ -637,11 +637,10 @@ app.post('/api/refund-balance', (req, res) => {
     });
 });
 
-function checkCardBingoWin(cardGrid, calledBalls, roomType = 10) {
+function checkCardBingoWin(cardGrid, calledBalls) {
     const calledSet = new Set(calledBalls.map(Number));
     const lastCalled = calledBalls.length > 0 ? Number(calledBalls[calledBalls.length - 1]) : null;
 
-    // 1. ጎን (Rows) ማረጋገጥ
     for (let r = 0; r < 5; r++) {
         let rowValid = true;
         let containsLast = false;
@@ -655,7 +654,6 @@ function checkCardBingoWin(cardGrid, calledBalls, roomType = 10) {
         if (rowValid && containsLast) return true;
     }
 
-    // 2. ወደ ታች / አምድ (Columns) ማረጋገጥ
     for (let c = 0; c < 5; c++) {
         let colValid = true;
         let containsLast = false;
@@ -669,7 +667,6 @@ function checkCardBingoWin(cardGrid, calledBalls, roomType = 10) {
         if (colValid && containsLast) return true;
     }
 
-    // 3. ዲያጎናል 1 (Diagonal 1) ማረጋገጥ
     let diag1Valid = true;
     let diag1ContainsLast = false;
     for (let i = 0; i < 5; i++) {
@@ -681,7 +678,6 @@ function checkCardBingoWin(cardGrid, calledBalls, roomType = 10) {
     }
     if (diag1Valid && diag1ContainsLast) return true;
 
-    // 4. ዲያጎናል 2 (Diagonal 2) ማረጋገጥ
     let diag2Valid = true;
     let diag2ContainsLast = false;
     for (let i = 0; i < 5; i++) {
@@ -693,65 +689,34 @@ function checkCardBingoWin(cardGrid, calledBalls, roomType = 10) {
     }
     if (diag2Valid && diag2ContainsLast) return true;
 
-    // 5. 🌟 አራቱን ማዕዘኖች (Four Corners) ማረጋገጥ - (ለባለ 10 ብር ሩም ብቻ የሚሰራ)
-    if (roomType === 10) {
-        let cornersMarked = grid[0][0].marked && grid[0][4].marked && grid[4][0].marked && grid[4][4].marked;
-if (cornersMarked) {
-    winningConditionsFound.push({ type: 'corners' });
-}
-  }
+    const corners = [cardGrid[0][0], cardGrid[0][4], cardGrid[4][0], cardGrid[4][4]];
+    let cornersValid = true;
+    let cornersContainsLast = false;
+    for (let val of corners) {
+        if (val === 'FREE' || val === 'STAR' || val === null || val === '★') continue;
+        let numVal = Number(val);
+        if (!calledSet.has(numVal)) {
+            cornersValid = false;
+            break;
+        }
+        if (numVal === lastCalled) cornersContainsLast = true;
+    }
+    if (cornersValid && cornersContainsLast) {
+        return true;
+    }
 
     return false;
 }
 
-
-// የቢንጎ ማሸነፊያ ጥያቄን መቀበያ API
 app.post('/api/bingo-win', (req, res) => {
-    const { userId, prize, cardNumber, userName, cardGrid, room } = req.body;
-    let roomType = room === 50 ? 50 : 10;
-    let roomData = loadRoom(roomType);
-
-    if (roomData.winner || (roomData.roundWinners && roomData.roundWinners.length > 0)) {
-        return res.json({ success: false, message: 'ይህ ዙር አልቋል!' });
-    }
-    
-    // የካርቴላውን ማትሪክስ እና የተጠሩትን ኳሶች ማረጋገጥ
-    let matrix = getCardMatrix(cardNumber);
-    let calledBalls = roomType === 50 ? serverCalledBalls50 : serverCalledBalls;
-
-    let grid = [];
-    for (let r = 0; r < 5; r++) {
-        let row = [];
-        for (let c = 0; c < 5; c++) {
-            let val = matrix[r][c];
-            let isMarked = (val === '★' || calledBalls.includes(Number(val)));
-            row.push({ marked: isMarked });
-        }
-        grid.push(row);
-    }
-
-    let winningConditionsFound = [];
-    for (let r = 0; r < 5; r++) { if (grid[r].every(c => c.marked)) winningConditionsFound.push({type: 'row'}); }
-    for (let c = 0; c < 5; c++) { if (grid.every(r => r[c].marked)) winningConditionsFound.push({type: 'col'}); }
-    if ([0,1,2,3,4].every(i => grid[i][i].marked)) winningConditionsFound.push({type: 'diag1'});
-    if ([0,1,2,3,4].every(i => grid[i][4 - i].marked)) winningConditionsFound.push({type: 'diag2'});
-	if (grid[0][0].marked && grid[0][4].marked && grid[4][0].marked && grid[4][4].marked) {
-    winningConditionsFound.push({type: 'corners'});
-}
-
-    let lineConditions = winningConditionsFound.filter(w => ['row', 'col', 'diag1', 'diag2'].includes(w.type));
-	
-    let requiredLines = (roomType === 50) ? 2 : 1;
-
-    if (lineConditions.length < requiredLines) {
-        return res.json({ success: false, fakeBingo: true, message: roomType === 50 ? '⚠️ 2 መስመር አልሞላም!' : '⚠️ መስመር አልሰራም!' });
-    }
-    
+    const { userId, prize, cardNumber, userName, cardGrid, room: rType } = req.body;
+    const roomType = rType === 50 ? 50 : 10;
+    let room = loadRoom(roomType);
     const users = loadUsers();
 
-    if (!roomData.disabledCards) roomData.disabledCards = [];
+    if (!room.disabledCards) room.disabledCards = [];
 
-    if (cardNumber && roomData.disabledCards.includes(Number(cardNumber))) {
+    if (cardNumber && room.disabledCards.includes(Number(cardNumber))) {
         return res.json({ success: false, message: 'ይህ ካርቴላ በዚህ ዙር ታግዷልና ቢንጎ ማለት አይቻልም!' });
     }
 
@@ -766,13 +731,13 @@ app.post('/api/bingo-win', (req, res) => {
     let calledBallsList = roomType === 50 ? serverCalledBalls50 : serverCalledBalls;
 
     if (serverCardGrid && Array.isArray(serverCardGrid) && serverCardGrid.length === 5) {
-        const isValid = checkCardBingoWin(serverCardGrid, calledBallsList, roomType);
+        const isValid = checkCardBingoWin(serverCardGrid, calledBallsList);
         if (!isValid) {
-            if (!roomData.disabledCards) roomData.disabledCards = [];
-            if (!roomData.disabledCards.includes(Number(cardNumber))) {
-                roomData.disabledCards.push(Number(cardNumber));
+            if (!room.disabledCards) room.disabledCards = [];
+            if (!room.disabledCards.includes(Number(cardNumber))) {
+                room.disabledCards.push(Number(cardNumber));
             }
-            saveRoom(roomData, roomType);
+            saveRoom(room, roomType);
             return res.json({ 
                 success: false, 
                 fakeBingo: true,
@@ -781,15 +746,15 @@ app.post('/api/bingo-win', (req, res) => {
         }
     }
 
-    if (!roomData.bingoTriggerTime) {
-        roomData.bingoTriggerTime = Date.now();
+    if (!room.bingoTriggerTime) {
+        room.bingoTriggerTime = Date.now();
     }
 
-    if (!roomData.roundWinners) roomData.roundWinners = [];
+    if (!room.roundWinners) room.roundWinners = [];
     
-    const alreadyWon = roomData.roundWinners.some(w => String(w.userId) === String(userId) && Number(w.cardNumber) === Number(cardNumber));
+    const alreadyWon = room.roundWinners.some(w => String(w.userId) === String(userId) && Number(w.cardNumber) === Number(cardNumber));
     if (!alreadyWon) {
-        roomData.roundWinners.push({
+        room.roundWinners.push({
             userId: String(userId),
             name: userName || 'ተጫዋች',
             cardNumber: Number(cardNumber),
@@ -799,11 +764,11 @@ app.post('/api/bingo-win', (req, res) => {
     }
 
     let multiplier = roomType === 50 ? 40 : 8;
-    let totalPrizePool = prize ? parseFloat(prize) : ((roomData.soldCount || (roomType === 50 ? soldCardsCount50 : soldCardsCount)) * multiplier);
-    let winnersCount = roomData.roundWinners.length;
+    let totalPrizePool = prize ? parseFloat(prize) : ((room.soldCount || (roomType === 50 ? soldCardsCount50 : soldCardsCount)) * multiplier);
+    let winnersCount = room.roundWinners.length;
     let individualPrize = totalPrizePool / winnersCount; 
 
-    roomData.winner = roomData.roundWinners.map(w => ({
+    room.winner = room.roundWinners.map(w => ({
         ...w,
         totalPrizePool: totalPrizePool,
         prize: individualPrize,
@@ -813,7 +778,7 @@ app.post('/api/bingo-win', (req, res) => {
     if (roomType === 50) serverRoundStartTime50 = Date.now();
     else serverRoundStartTime = Date.now();
     
-    saveRoom(roomData, roomType);
+    saveRoom(room, roomType);
 
     if (!alreadyWon) {
         let currentBal = (targetUser.balance !== undefined && !isNaN(targetUser.balance)) ? Number(targetUser.balance) : 10.00;
@@ -832,8 +797,8 @@ app.post('/api/bingo-win', (req, res) => {
         prize: individualPrize,
         totalPrizePool: totalPrizePool,
         winnersCount: winnersCount,
-        winners: roomData.roundWinners,
-        winner: roomData.winner
+        winners: room.roundWinners,
+        winner: room.winner
     });
 });
 
