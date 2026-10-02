@@ -557,7 +557,6 @@
             animation: zoomInAndPulse 0.4s cubic-bezier(0.175, 0.885) forwards;
         }
 
-        /* Recent Ball Colors based on prefix (B, I, N, G, O) */
         .recent-ball-tag.b-ball {
             background: #2196f3 !important;
             color: #ffffff !important;
@@ -991,7 +990,7 @@
 
     <div class="container">
         <div id="admin-top-panel" class="admin-top-bar" onclick="openAdminModal()">
-            🛡️️ አድሚን: የወጪ ጥያቄ (Pending Withdrawals) ይመልከቱ
+            🛡 አድሚን: የወጪ ጥያቄ (Pending Withdrawals) ይመልከቱ
         </div>
 
         <!-- HOME PAGE -->
@@ -1044,6 +1043,8 @@
                 <div class="stat-badge badge-balance" onclick="openWithdrawModal()" title="ገንዘብ ለማውጣት ጠቅ ያድርጉ">
                     <span class="stat-label" style="color: #e2fccf;">ቀሪ ሂሳብ</span>
                     <span class="stat-value" id="balance-amount">0.00 ETB</span>
+                    <!-- የተጠየቀው ባላንስ ማምጫ ኤለመንት መደራረብ እንዳይፈጥር እዚህ ተካቷል -->
+                    <span id="balance-display" style="display:none;">0.00</span>
                 </div>
             </div>
 
@@ -1243,7 +1244,8 @@
             document.getElementById('admin-broadcast-section').style.display = 'flex';
         }
 
-        const SERVER_URL = 'https://wowbingo.app.aletcloud.com'
+        const SERVER_URL = 'https://wowbingo.app.aletcloud.com';
+        const FETCH_HEADERS = {}; // የጋራ ሄደሮች አስፈላጊ ሲሆኑ እዚህ ይጨመራሉ
         
         let cardPrice = roomType === 50 ? 50.00 : 10.00;
         let soldCount = 0;
@@ -1482,16 +1484,27 @@
             gridEl.appendChild(cell);
         }
 
+        // የተቀናጀው የባላንስ ማምጫ ሎጂክ (ከተሰጠው ኮድ የተወሰደ እና የሰርቨር ዩአርኤልን የሚጠቀም)[cite: 4]
         async function fetchServerBalance() {
             try {
-                const response = await fetch(`${SERVER_URL}/api/balance?telegram_id=${userTelegramId}`, { headers: FETCH_HEADERS });
+                const response = await fetch(`${SERVER_URL}/api/balance/${userTelegramId}`, { headers: FETCH_HEADERS });
                 const data = await response.json();
-                if (data.success) {
+                if (data.balance !== undefined) {
                     balance = data.balance;
                     updateDisplay();
                 }
             } catch (err) {
-                console.log('ባላንስ ማምጣት አልተቻለም');
+                // መደበኛውን ባላንስ መውጫ API በመሞከር ላይ
+                try {
+                    const fallbackRes = await fetch(`${SERVER_URL}/api/balance?telegram_id=${userTelegramId}`, { headers: FETCH_HEADERS });
+                    const fallbackData = await fallbackRes.json();
+                    if (fallbackData.success) {
+                        balance = fallbackData.balance;
+                        updateDisplay();
+                    }
+                } catch (e) {
+                    console.log('ባላንስ ማምጣት አልተቻለም:', err);
+                }
             }
         }
 
@@ -1747,7 +1760,7 @@
             }
 
             if (amount > balance) {
-                statusMsg.innerText = '⚠️️ ወጪ ያዘዙት የብር መጠን ቀሪ ሂሳብ ይበልጣል!';
+                statusMsg.innerText = '⚠ ወጪ ያዘዙት የብር መጠን ቀሪ ሂሳብ ይበልጣል!';
                 return;
             }
 
@@ -1980,8 +1993,11 @@
         function updateDisplay() {
             const soldEl = document.getElementById('sold-count');
             const balEl = document.getElementById('balance-amount');
+            const balanceDisplayEl = document.getElementById('balance-display');
+            
             if (soldEl) soldEl.innerText = soldCount;
             if (balEl) balEl.innerText = balance.toFixed(2) + ' ETB';
+            if (balanceDisplayEl) balanceDisplayEl.innerText = balance.toFixed(2);
             
             const balDisp = document.getElementById('w-current-balance-display');
             if (balDisp) balDisp.innerText = `ቀሪ ሂሳብ: ${balance.toFixed(2)} ETB`;
