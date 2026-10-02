@@ -263,16 +263,16 @@ setInterval(() => {
         return;
     }
 
-    if (elapsed >= 30) {
+    if (elapsed >= 40) {
         let currentSoldCount = room.soldCount || soldCardsCount;
-        if (currentSoldCount < 2) {
+        if (currentSoldCount < 1) {
             serverRoundStartTime = Date.now();
             serverCalledBalls = [];
             return;
         }
 
-        let gameElapsed = elapsed - 30;
-        let targetBallsCount = Math.min(75, Math.floor(gameElapsed / 5) + 1); 
+        let gameElapsed = elapsed - 40;
+        let targetBallsCount = Math.min(75, Math.floor(gameElapsed / 8) + 1); 
         
         if (serverCalledBalls.length < targetBallsCount && serverCalledBalls.length < 75) {
             let available = Array.from({length: 75}, (_, i) => i + 1).filter(n => !serverCalledBalls.includes(n));
@@ -316,16 +316,16 @@ setInterval(() => {
         return;
     }
 
-    if (elapsed >= 30) {
+    if (elapsed >= 40) {
         let currentSoldCount = room.soldCount || soldCardsCount50;
-        if (currentSoldCount < 2) {
+        if (currentSoldCount < 1) {
             serverRoundStartTime50 = Date.now();
             serverCalledBalls50 = [];
             return;
         }
 
-        let gameElapsed = elapsed - 30;
-        let targetBallsCount = Math.min(75, Math.floor(gameElapsed / 5) + 1); 
+        let gameElapsed = elapsed - 40;
+        let targetBallsCount = Math.min(75, Math.floor(gameElapsed / 8) + 1); 
         
         if (serverCalledBalls50.length < targetBallsCount && serverCalledBalls50.length < 75) {
             let available = Array.from({length: 75}, (_, i) => i + 1).filter(n => !serverCalledBalls50.includes(n));
@@ -525,7 +525,7 @@ app.post('/api/deduct-balance', (req, res) => {
 
     let roundStartTime = roomType === 50 ? serverRoundStartTime50 : serverRoundStartTime;
     let elapsed = Math.floor((Date.now() - roundStartTime) / 1000);
-    if (elapsed >= 30 || (room.winner || (room.roundWinners && room.roundWinners.length > 0))) {
+    if (elapsed >= 40 || (room.winner || (room.roundWinners && room.roundWinners.length > 0))) {
         return res.json({ success: false, message: 'ጨዋታው ስለጀመረ ወይም አልቆ ስለተጠናቀቀ ካርድ መምረጥ ወይም መግዛት አይቻልም!' });
     }
 
@@ -599,7 +599,7 @@ app.post('/api/refund-balance', (req, res) => {
 
     let roundStartTime = roomType === 50 ? serverRoundStartTime50 : serverRoundStartTime;
     let elapsed = Math.floor((Date.now() - roundStartTime) / 1000);
-    if (elapsed >= 30 || (room.winner || (room.roundWinners && room.roundWinners.length > 0))) {
+    if (elapsed >= 40 || (room.winner || (room.roundWinners && room.roundWinners.length > 0))) {
         return res.json({ success: false, message: 'ጨዋታው ስለጀመረ የያዙትን ካርቴላ መልቀቅ ወይም መቀየር አይችሉም!' });
     }
 
