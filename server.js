@@ -7,7 +7,7 @@ const axios = require('axios'); // ለቴሌብር መርቻንት API ጥያቄ
 
 const BOT_TOKEN = '8903239538:AAE6g9L5lQDnHFQy8Gr6wWmDC5M-4JdcSMk';
 const ADMIN_TELEGRAM_ID = 2119423483;
-const WEB_APP_URL = 'https://pang-coffee-buddy.ngrok-free.dev';
+const WEB_APP_URL = 'wowbingo.app.aletcloud.com';
 
 // የቴሌብር መርቻንት API ውቅር መለኪያዎች (በእርስዎ መርቻንት መረጃ ያስተካክሏቸው)
 const TELEBIRR_CONFIG = {
