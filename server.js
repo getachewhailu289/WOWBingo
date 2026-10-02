@@ -19,7 +19,25 @@ const TELEBIRR_CONFIG = {
 
 const bot = new Telegraf(BOT_TOKEN);
 const app = express();
+const express = require('express');
+const cors = require('cors'); // 1. cors ማምጣት (import ማድረግ)
 
+const app = express();
+const PORT = 3000;
+
+// 2. ሌሎች ሚድልዌር ወይም ራውተሮች ከመደረጋቸው በፊት እዚህ ላይ ማስገባት
+app.use(cors()); 
+
+app.use(express.json()); // ለ JSON ፖስት ጥያቄዎች የሚሆን
+
+// የራውተሮች ክፍል
+app.get('/api/test', (req, res) => {
+    res.json({ message: 'CORS በተሳካ ሁኔታ ሰርቷል!' });
+});
+
+app.listen(PORT, () => {
+    console.log(`ሰርቨሩ በፖርት ${PORT} እየሰራ ነው`);
+});
 app.use(express.json());
 app.use(cors());
 
