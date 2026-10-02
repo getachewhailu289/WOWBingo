@@ -708,9 +708,15 @@ function checkCardBingoWin(cardGrid, calledBalls) {
     return false;
 }
 
+// የቢንጎ ማሸነፊያ ጥያቄን መቀበያ API
 app.post('/api/bingo-win', (req, res) => {
     const { userId, prize, cardNumber, userName, cardGrid, room } = req.body;
     let roomType = room === 50 ? 50 : 10;
+    let roomData = loadRoom(roomType);
+
+    if (roomData.winner || (roomData.roundWinners && roomData.roundWinners.length > 0)) {
+        return res.json({ success: false, message: 'ይህ ዙር አልቋል!' });
+    }
     
     // የካርቴላውን ማትሪክስ እና የተጠሩትን ኳሶች ማረጋገጥ
     let matrix = getCardMatrix(cardNumber);
@@ -739,12 +745,12 @@ app.post('/api/bingo-win', (req, res) => {
     if (lineConditions.length < requiredLines) {
         return res.json({ success: false, fakeBingo: true, message: roomType === 50 ? '⚠️ 2 መስመር አልሞላም!' : '⚠️ መስመር አልሰራም!' });
     }
-    room = loadRoom(roomType);
+    
     const users = loadUsers();
 
-    if (!room.disabledCards) room.disabledCards = [];
+    if (!roomData.disabledCards) roomData.disabledCards = [];
 
-    if (cardNumber && room.disabledCards.includes(Number(cardNumber))) {
+    if (cardNumber && roomData.disabledCards.includes(Number(cardNumber))) {
         return res.json({ success: false, message: 'ይህ ካርቴላ በዚህ ዙር ታግዷልና ቢንጎ ማለት አይቻልም!' });
     }
 
@@ -761,11 +767,11 @@ app.post('/api/bingo-win', (req, res) => {
     if (serverCardGrid && Array.isArray(serverCardGrid) && serverCardGrid.length === 5) {
         const isValid = checkCardBingoWin(serverCardGrid, calledBallsList);
         if (!isValid) {
-            if (!room.disabledCards) room.disabledCards = [];
-            if (!room.disabledCards.includes(Number(cardNumber))) {
-                room.disabledCards.push(Number(cardNumber));
+            if (!roomData.disabledCards) roomData.disabledCards = [];
+            if (!roomData.disabledCards.includes(Number(cardNumber))) {
+                roomData.disabledCards.push(Number(cardNumber));
             }
-            saveRoom(room, roomType);
+            saveRoom(roomData, roomType);
             return res.json({ 
                 success: false, 
                 fakeBingo: true,
@@ -774,15 +780,15 @@ app.post('/api/bingo-win', (req, res) => {
         }
     }
 
-    if (!room.bingoTriggerTime) {
-        room.bingoTriggerTime = Date.now();
+    if (!roomData.bingoTriggerTime) {
+        roomData.bingoTriggerTime = Date.now();
     }
 
-    if (!room.roundWinners) room.roundWinners = [];
+    if (!roomData.roundWinners) roomData.roundWinners = [];
     
-    const alreadyWon = room.roundWinners.some(w => String(w.userId) === String(userId) && Number(w.cardNumber) === Number(cardNumber));
+    const alreadyWon = roomData.roundWinners.some(w => String(w.userId) === String(userId) && Number(w.cardNumber) === Number(cardNumber));
     if (!alreadyWon) {
-        room.roundWinners.push({
+        roomData.roundWinners.push({
             userId: String(userId),
             name: userName || 'ተጫዋች',
             cardNumber: Number(cardNumber),
@@ -792,11 +798,11 @@ app.post('/api/bingo-win', (req, res) => {
     }
 
     let multiplier = roomType === 50 ? 40 : 8;
-    let totalPrizePool = prize ? parseFloat(prize) : ((room.soldCount || (roomType === 50 ? soldCardsCount50 : soldCardsCount)) * multiplier);
-    let winnersCount = room.roundWinners.length;
+    let totalPrizePool = prize ? parseFloat(prize) : ((roomData.soldCount || (roomType === 50 ? soldCardsCount50 : soldCardsCount)) * multiplier);
+    let winnersCount = roomData.roundWinners.length;
     let individualPrize = totalPrizePool / winnersCount; 
 
-    room.winner = room.roundWinners.map(w => ({
+    roomData.winner = roomData.roundWinners.map(w => ({
         ...w,
         totalPrizePool: totalPrizePool,
         prize: individualPrize,
@@ -806,7 +812,7 @@ app.post('/api/bingo-win', (req, res) => {
     if (roomType === 50) serverRoundStartTime50 = Date.now();
     else serverRoundStartTime = Date.now();
     
-    saveRoom(room, roomType);
+    saveRoom(roomData, roomType);
 
     if (!alreadyWon) {
         let currentBal = (targetUser.balance !== undefined && !isNaN(targetUser.balance)) ? Number(targetUser.balance) : 10.00;
@@ -825,8 +831,8 @@ app.post('/api/bingo-win', (req, res) => {
         prize: individualPrize,
         totalPrizePool: totalPrizePool,
         winnersCount: winnersCount,
-        winners: room.roundWinners,
-        winner: room.winner
+        winners: roomData.roundWinners,
+        winner: roomData.winner
     });
 });
 
