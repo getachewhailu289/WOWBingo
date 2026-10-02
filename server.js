@@ -739,7 +739,7 @@ app.post('/api/bingo-win', (req, res) => {
     if (lineConditions.length < requiredLines) {
         return res.json({ success: false, fakeBingo: true, message: roomType === 50 ? '⚠️ 2 መስመር አልሞላም!' : '⚠️ መስመር አልሰራም!' });
     }
-    let room = loadRoom(roomType);
+    room = loadRoom(roomType);
     const users = loadUsers();
 
     if (!room.disabledCards) room.disabledCards = [];
