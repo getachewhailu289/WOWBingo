@@ -263,16 +263,16 @@ setInterval(() => {
         return;
     }
 
-    if (elapsed >= 40) {
+    if (elapsed >= 30) {
         let currentSoldCount = room.soldCount || soldCardsCount;
-        if (currentSoldCount < 1) {
+        if (currentSoldCount < 2) {
             serverRoundStartTime = Date.now();
             serverCalledBalls = [];
             return;
         }
 
-        let gameElapsed = elapsed - 40;
-        let targetBallsCount = Math.min(75, Math.floor(gameElapsed / 8) + 1); 
+        let gameElapsed = elapsed - 30;
+        let targetBallsCount = Math.min(75, Math.floor(gameElapsed / 5) + 1); 
         
         if (serverCalledBalls.length < targetBallsCount && serverCalledBalls.length < 75) {
             let available = Array.from({length: 75}, (_, i) => i + 1).filter(n => !serverCalledBalls.includes(n));
@@ -316,16 +316,16 @@ setInterval(() => {
         return;
     }
 
-    if (elapsed >= 40) {
+    if (elapsed >= 30) {
         let currentSoldCount = room.soldCount || soldCardsCount50;
-        if (currentSoldCount < 1) {
+        if (currentSoldCount < 2) {
             serverRoundStartTime50 = Date.now();
             serverCalledBalls50 = [];
             return;
         }
 
-        let gameElapsed = elapsed - 40;
-        let targetBallsCount = Math.min(75, Math.floor(gameElapsed / 8) + 1); 
+        let gameElapsed = elapsed - 30;
+        let targetBallsCount = Math.min(75, Math.floor(gameElapsed / 5) + 1); 
         
         if (serverCalledBalls50.length < targetBallsCount && serverCalledBalls50.length < 75) {
             let available = Array.from({length: 75}, (_, i) => i + 1).filter(n => !serverCalledBalls50.includes(n));
@@ -525,7 +525,7 @@ app.post('/api/deduct-balance', (req, res) => {
 
     let roundStartTime = roomType === 50 ? serverRoundStartTime50 : serverRoundStartTime;
     let elapsed = Math.floor((Date.now() - roundStartTime) / 1000);
-    if (elapsed >= 40 || (room.winner || (room.roundWinners && room.roundWinners.length > 0))) {
+    if (elapsed >= 30 || (room.winner || (room.roundWinners && room.roundWinners.length > 0))) {
         return res.json({ success: false, message: 'ጨዋታው ስለጀመረ ወይም አልቆ ስለተጠናቀቀ ካርድ መምረጥ ወይም መግዛት አይቻልም!' });
     }
 
@@ -599,7 +599,7 @@ app.post('/api/refund-balance', (req, res) => {
 
     let roundStartTime = roomType === 50 ? serverRoundStartTime50 : serverRoundStartTime;
     let elapsed = Math.floor((Date.now() - roundStartTime) / 1000);
-    if (elapsed >= 40 || (room.winner || (room.roundWinners && room.roundWinners.length > 0))) {
+    if (elapsed >= 30 || (room.winner || (room.roundWinners && room.roundWinners.length > 0))) {
         return res.json({ success: false, message: 'ጨዋታው ስለጀመረ የያዙትን ካርቴላ መልቀቅ ወይም መቀየር አይችሉም!' });
     }
 
@@ -709,8 +709,36 @@ function checkCardBingoWin(cardGrid, calledBalls) {
 }
 
 app.post('/api/bingo-win', (req, res) => {
-    const { userId, prize, cardNumber, userName, cardGrid, room: rType } = req.body;
-    const roomType = rType === 50 ? 50 : 10;
+    const { userId, prize, cardNumber, userName, cardGrid, room } = req.body;
+    let roomType = room === 50 ? 50 : 10;
+    
+    // የካርቴላውን ማትሪክስ እና የተጠሩትን ኳሶች ማረጋገጥ
+    let matrix = getCardMatrix(cardNumber);
+    let calledBalls = roomType === 50 ? serverCalledBalls50 : serverCalledBalls;
+
+    let grid = [];
+    for (let r = 0; r < 5; r++) {
+        let row = [];
+        for (let c = 0; c < 5; c++) {
+            let val = matrix[r][c];
+            let isMarked = (val === '★' || calledBalls.includes(Number(val)));
+            row.push({ marked: isMarked });
+        }
+        grid.push(row);
+    }
+
+    let winningConditionsFound = [];
+    for (let r = 0; r < 5; r++) { if (grid[r].every(c => c.marked)) winningConditionsFound.push({type: 'row'}); }
+    for (let c = 0; c < 5; c++) { if (grid.every(r => r[c].marked)) winningConditionsFound.push({type: 'col'}); }
+    if ([0,1,2,3,4].every(i => grid[i][i].marked)) winningConditionsFound.push({type: 'diag1'});
+    if ([0,1,2,3,4].every(i => grid[i][4 - i].marked)) winningConditionsFound.push({type: 'diag2'});
+
+    let lineConditions = winningConditionsFound.filter(w => ['row', 'col', 'diag1', 'diag2'].includes(w.type));
+    let requiredLines = (roomType === 50) ? 2 : 1;
+
+    if (lineConditions.length < requiredLines) {
+        return res.json({ success: false, fakeBingo: true, message: roomType === 50 ? '⚠️ 2 መስመር አልሞላም!' : '⚠️ መስመር አልሰራም!' });
+    }
     let room = loadRoom(roomType);
     const users = loadUsers();
 
