@@ -695,22 +695,11 @@ function checkCardBingoWin(cardGrid, calledBalls, roomType = 10) {
 
     // 5. 🌟 አራቱን ማዕዘኖች (Four Corners) ማረጋገጥ - (ለባለ 10 ብር ሩም ብቻ የሚሰራ)
     if (roomType === 10) {
-        const corners = [cardGrid[0][0], cardGrid[0][4], cardGrid[4][0], cardGrid[4][4]];
-        let cornersValid = true;
-        let cornersContainsLast = false;
-        for (let val of corners) {
-            if (val === 'FREE' || val === 'STAR' || val === null || val === '★') continue;
-            let numVal = Number(val);
-            if (!calledSet.has(numVal)) {
-                cornersValid = false;
-                break;
-            }
-            if (numVal === lastCalled) cornersContainsLast = true;
-        }
-        if (cornersValid && cornersContainsLast) {
-            return true;
-        }
-    }
+        let cornersMarked = grid[0][0].marked && grid[0][4].marked && grid[4][0].marked && grid[4][4].marked;
+if (cornersMarked) {
+    winningConditionsFound.push({ type: 'corners' });
+}
+  }
 
     return false;
 }
@@ -746,8 +735,12 @@ app.post('/api/bingo-win', (req, res) => {
     for (let c = 0; c < 5; c++) { if (grid.every(r => r[c].marked)) winningConditionsFound.push({type: 'col'}); }
     if ([0,1,2,3,4].every(i => grid[i][i].marked)) winningConditionsFound.push({type: 'diag1'});
     if ([0,1,2,3,4].every(i => grid[i][4 - i].marked)) winningConditionsFound.push({type: 'diag2'});
+	if (grid[0][0].marked && grid[0][4].marked && grid[4][0].marked && grid[4][4].marked) {
+    winningConditionsFound.push({type: 'corners'});
+}
 
     let lineConditions = winningConditionsFound.filter(w => ['row', 'col', 'diag1', 'diag2'].includes(w.type));
+	
     let requiredLines = (roomType === 50) ? 2 : 1;
 
     if (lineConditions.length < requiredLines) {
