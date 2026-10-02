@@ -637,10 +637,11 @@ app.post('/api/refund-balance', (req, res) => {
     });
 });
 
-function checkCardBingoWin(cardGrid, calledBalls) {
+function checkCardBingoWin(cardGrid, calledBalls, roomType = 10) {
     const calledSet = new Set(calledBalls.map(Number));
     const lastCalled = calledBalls.length > 0 ? Number(calledBalls[calledBalls.length - 1]) : null;
 
+    // 1. ጎን (Rows) ማረጋገጥ
     for (let r = 0; r < 5; r++) {
         let rowValid = true;
         let containsLast = false;
@@ -654,6 +655,7 @@ function checkCardBingoWin(cardGrid, calledBalls) {
         if (rowValid && containsLast) return true;
     }
 
+    // 2. ወደ ታች / አምድ (Columns) ማረጋገጥ
     for (let c = 0; c < 5; c++) {
         let colValid = true;
         let containsLast = false;
@@ -667,6 +669,7 @@ function checkCardBingoWin(cardGrid, calledBalls) {
         if (colValid && containsLast) return true;
     }
 
+    // 3. ዲያጎናል 1 (Diagonal 1) ማረጋገጥ
     let diag1Valid = true;
     let diag1ContainsLast = false;
     for (let i = 0; i < 5; i++) {
@@ -678,6 +681,7 @@ function checkCardBingoWin(cardGrid, calledBalls) {
     }
     if (diag1Valid && diag1ContainsLast) return true;
 
+    // 4. ዲያጎናል 2 (Diagonal 2) ማረጋገጥ
     let diag2Valid = true;
     let diag2ContainsLast = false;
     for (let i = 0; i < 5; i++) {
@@ -689,20 +693,23 @@ function checkCardBingoWin(cardGrid, calledBalls) {
     }
     if (diag2Valid && diag2ContainsLast) return true;
 
-    const corners = [cardGrid[0][0], cardGrid[0][4], cardGrid[4][0], cardGrid[4][4]];
-    let cornersValid = true;
-    let cornersContainsLast = false;
-    for (let val of corners) {
-        if (val === 'FREE' || val === 'STAR' || val === null || val === '★') continue;
-        let numVal = Number(val);
-        if (!calledSet.has(numVal)) {
-            cornersValid = false;
-            break;
+    // 5. 🌟 አራቱን ማዕዘኖች (Four Corners) ማረጋገጥ - (ለባለ 10 ብር ሩም ብቻ የሚሰራ)
+    if (roomType === 10) {
+        const corners = [cardGrid[0][0], cardGrid[0][4], cardGrid[4][0], cardGrid[4][4]];
+        let cornersValid = true;
+        let cornersContainsLast = false;
+        for (let val of corners) {
+            if (val === 'FREE' || val === 'STAR' || val === null || val === '★') continue;
+            let numVal = Number(val);
+            if (!calledSet.has(numVal)) {
+                cornersValid = false;
+                break;
+            }
+            if (numVal === lastCalled) cornersContainsLast = true;
         }
-        if (numVal === lastCalled) cornersContainsLast = true;
-    }
-    if (cornersValid && cornersContainsLast) {
-        return true;
+        if (cornersValid && cornersContainsLast) {
+            return true;
+        }
     }
 
     return false;
@@ -765,7 +772,7 @@ app.post('/api/bingo-win', (req, res) => {
     let calledBallsList = roomType === 50 ? serverCalledBalls50 : serverCalledBalls;
 
     if (serverCardGrid && Array.isArray(serverCardGrid) && serverCardGrid.length === 5) {
-        const isValid = checkCardBingoWin(serverCardGrid, calledBallsList);
+        const isValid = checkCardBingoWin(serverCardGrid, calledBallsList, roomType);
         if (!isValid) {
             if (!roomData.disabledCards) roomData.disabledCards = [];
             if (!roomData.disabledCards.includes(Number(cardNumber))) {
