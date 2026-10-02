@@ -1038,7 +1038,7 @@
                 </div>
                 <div class="stat-badge badge-time">
                     <span class="stat-label" style="color: #94a3b8;">TIME</span>
-                    <span class="stat-value" id="timer">40s</span>
+                    <span class="stat-value" id="timer">30s</span>
                 </div>
                 <div class="stat-badge badge-balance" onclick="openWithdrawModal()" title="ገንዘብ ለማውጣት ጠቅ ያድርጉ">
                     <span class="stat-label" style="color: #e2fccf;">ቀሪ ሂሳብ</span>
@@ -1797,7 +1797,7 @@
 
             if (isNaN(elapsed) || elapsed < 0) elapsed = 0;
 
-            let remaining = 40 - elapsed;
+            let remaining = 30 - elapsed;
             if (remaining < 0) remaining = 0;
 
             const modal = document.getElementById('winner-modal');
@@ -2219,7 +2219,7 @@
                 if ((index + 1) % 5 === 0) { grid.push(row); row = []; }
             });
 
-            let winningConditionsFound = [];
+           let winningConditionsFound = [];
             for (let r = 0; r < 5; r++) { if (grid[r].every(c => c.marked)) winningConditionsFound.push({type: 'row', index: r}); }
             for (let c = 0; c < 5; c++) { if (grid.every(r => r[c].marked)) winningConditionsFound.push({type: 'col', index: c}); }
             if ([0,1,2,3,4].every(i => grid[i][i].marked)) winningConditionsFound.push({type: 'diag1'});
@@ -2228,8 +2228,12 @@
                 winningConditionsFound.push({type: 'corners'});
             }
 
-            if (winningConditionsFound.length === 0) {
-                showNotification(`⚠️ መስመር አልሰራም!`);
+            // ለባለ 50 ብር ሩም ቢያንስ 2 መስመር (ወደ ጎን፣ ወደ ታች ወይም ዲያጎናል) መኖሩን ማረጋገጫ
+            let lineConditions = winningConditionsFound.filter(w => ['row', 'col', 'diag1', 'diag2'].includes(w.type));
+            let requiredLines = (roomType === 50) ? 2 : 1;
+
+            if (lineConditions.length < requiredLines) {
+                showNotification(roomType === 50 ? `⚠️ ባለ 50 ብር ሩም ለማሸነፍ ቢያንስ 2 መስመር (ወደ ጎን፣ ወደ ታች ወይም ዲያጎናል) ያስፈልጋል!` : `⚠️ መስመር አልሰራም!`);
                 return;
             }
 
