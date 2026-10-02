@@ -695,20 +695,21 @@ function checkCardBingoWin(cardGrid, calledBalls, roomType = 10) {
 
     // 5. 🌟 አራቱን ማዕዘኖች (Four Corners) ማረጋገጥ - (ለባለ 10 ብር ሩም ብቻ የሚሰራ)
     if (roomType === 10) {
-     const corners = [cardGrid[0][0], cardGrid[0][4], cardGrid[4][0], cardGrid[4][4]];
-    let cornersValid = true;
-    let cornersContainsLast = false;
-    for (let val of corners) {
-        if (val === 'FREE' || val === 'STAR' || val === null || val === '★') continue;
-        let numVal = Number(val);
-        if (!calledSet.has(numVal)) {
-            cornersValid = false;
-            break;
+        const corners = [cardGrid[0][0], cardGrid[0][4], cardGrid[4][0], cardGrid[4][4]];
+        let cornersValid = true;
+        let cornersContainsLast = false;
+        for (let val of corners) {
+            if (val === 'FREE' || val === 'STAR' || val === null || val === '★') continue;
+            let numVal = Number(val);
+            if (!calledSet.has(numVal)) {
+                cornersValid = false;
+                break;
+            }
+            if (numVal === lastCalled) cornersContainsLast = true;
         }
-        if (numVal === lastCalled) cornersContainsLast = true;
-    }
-    if (cornersValid && cornersContainsLast) {
-        return true;
+        if (cornersValid && cornersContainsLast) {
+            return true;
+        }
     }
 
     return false;
