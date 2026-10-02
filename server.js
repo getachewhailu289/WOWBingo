@@ -9,7 +9,7 @@ const BOT_TOKEN = '8903239538:AAE6g9L5lQDnHFQy8Gr6wWmDC5M-4JdcSMk';
 const ADMIN_TELEGRAM_ID = 2119423483;
 const WEB_APP_URL = 'https://wowbingo.app.aletcloud.com';
 
-// የቴሌብር መርቻንት API ውቅር መለኪያዎች (በእርስዎ መርቻንት መረጃ ያስተካክሏቸው)
+// የቴሌብር መርቻንት API ውቅር መለኪያዎች
 const TELEBIRR_CONFIG = {
     merchantId: 'YOUR_TELEBIRR_MERCHANT_ID',
     appId: 'YOUR_TELEBIRR_APP_ID',
@@ -19,31 +19,16 @@ const TELEBIRR_CONFIG = {
 
 const bot = new Telegraf(BOT_TOKEN);
 const app = express();
-const express = require('express');
-const cors = require('cors'); // 1. cors ማምጣት (import ማድረግ)
 
-const app = express();
-
-// 2. ሌሎች ሚድልዌር ወይም ራውተሮች ከመደረጋቸው በፊት እዚህ ላይ ማስገባት
-app.use(cors()); 
-
-app.use(express.json()); // ለ JSON ፖስት ጥያቄዎች የሚሆን
+// ሚድልዌሮች (Middleware)
+app.use(cors());
+app.use(express.json());
+app.use(express.static('public'));
 
 // የራውተሮች ክፍል
 app.get('/api/test', (req, res) => {
     res.json({ message: 'CORS በተሳካ ሁኔታ ሰርቷል!' });
 });
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`ሰርቨሩ በፖርት ${PORT} እየሰራ ነው`);
-});
-
-app.use(express.json());
-app.use(cors());
-
-// እዚህ ጋር ነው app.use(express.static('public')); የሚጨመረው (ስታቲክ ፋይሎችን ለማንበብ)
-app.use(express.static('public'));
 
 const USERS_FILE = path.join(__dirname, 'users.json');
 const CONTACTS_FILE = path.join(__dirname, 'contacts.json');
@@ -508,7 +493,6 @@ app.get('/api/game-status', (req, res) => {
     });
 });
 
-// የ ሚኒ አፕ (Frontend) ባላንስ ጥያቄዎችን እንዲያስተናግድ የተጨመረው API (ሁለቱንም /api/balance እና /api/balance/:userId አብረው እንዲኖሩ ተደረገ)
 app.get(['/api/balance', '/api/balance/:userId'], (req, res) => {
     const telegramId = req.query.telegram_id || req.query.user_id || req.query.id || req.params.userId;
     if (!telegramId) return res.status(400).json({ success: false, error: 'Telegram ID required' });
@@ -1010,7 +994,7 @@ bot.command('addbalance', async (ctx) => {
 
     const textParts = ctx.message.text.split(' ');
     if (textParts.length < 3) {
-        return ctx.reply('⚠️️ አጠቃቀም ስህተት ነው!\nትክክለኛ አጠቃቀም: <code>/addbalance telegram_id የብር_መጠን</code>', { parse_mode: 'HTML' });
+        return ctx.reply('⚠ አጠቃቀም ስህተት ነው!\nትክክለኛ አጠቃቀም: <code>/addbalance telegram_id የብር_መጠን</code>', { parse_mode: 'HTML' });
     }
 
     const targetUserId = textParts[1];
@@ -1560,8 +1544,9 @@ bot.on('text', async (ctx) => {
     }, 1500);
 });
 
+// ሰርቨሩ እና ቦቱ በአንድ ላይ የሚጀምሩበት ትክክለኛ እና ብቸኛ ቦታ
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
 });
 
